@@ -125,12 +125,14 @@ with tempfile.TemporaryDirectory(prefix="coyote-shared-config-") as temp:
     baseline_by_board["u280"] = render(u280_default, "u280")
     print("SHARED_CONFIGURATION_DEFAULT_PASS")
 
-    # A flat V80 build may use 32 regions; its existing PR limit stays at 15.
-    flat = config(N_REGIONS=32, EN_PR=0, EN_SHELL_PBLOCK=1, EN_P2P=1, EN_HOST_NOC=1)
+    # A flat V80 build may use 32 regions with a rebuilt static layer; its
+    # existing PR limit stays at 15.
+    flat = config(N_REGIONS=32, EN_PR=0, EN_SHELL_PBLOCK=1, EN_P2P=1, EN_HOST_NOC=1,
+                  BUILD_STATIC=1)
     build = work / "v80-flat-32"
     result = run_cmake(build, "v80", flat)
     assert result.returncode == 0, result.stdout
-    assert_cfg(build, flat)
+    assert_cfg(build, {key: value for key, value in flat.items() if key != "BUILD_STATIC"})
     shell, dynamic = render(build, "v80")
     assert "axis_p2p_send_tdata" in dynamic
     assert "axis_p2p_arbiter" in dynamic
@@ -257,6 +259,8 @@ with tempfile.TemporaryDirectory(prefix="coyote-shared-config-") as temp:
         ("raw-stack-mode", "v80", config(EN_NET_RAW=1, NET_RAW_VFPGA_ID=0, EN_STATS=1), "EN_NET_RAW bypasses the network stack"),
         ("aurora-qsfp-conflict", "u280", config(EN_AURORA_1=1, EN_NET_1=1), "EN_AURORA_1 and EN_NET_1 both enabled"),
         ("region-limit-with-pr", "v80", config(N_REGIONS=32, EN_PR=1), "Max 15 vFPGAs supported"),
+        ("region-limit-shipped-static", "v80", config(N_REGIONS=32, EN_PR=0, EN_SHELL_PBLOCK=1),
+         "exceeds the 15 vFPGA interrupts of the shipped static"),
         ("pmtu-nonpower", "v80", config(PMTU_HOST=1000), "PMTU_HOST=1000 must be a power of 2"),
         ("pmtu-zero", "v80", config(PMTU_CARD=0), "PMTU_CARD=0 must be a power of 2"),
         ("pmtu-host-upper-bound", "v80", config(PMTU_HOST=65536), "PMTU_HOST=65536 must be a power of 2 between 64 and 32768."),

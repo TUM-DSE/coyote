@@ -73,7 +73,7 @@ create_project -in_memory -part $part
 add_file "$dcp_dir/shell_subdivided.dcp"
 
 add_files -fileset [get_filesets constrs_1] "$hw_dir/constraints/$cfg(fdev)/shell/impl"
-add_files -fileset [get_filesets constrs_1] "$hw_dir/constraints/$cfg(fdev)/dynamic/impl"
+add_dynamic_impl_constraints
 add_files -fileset [get_filesets constrs_1] "$hw_dir/constraints/$cfg(fdev)/fplan"
 if {$cfg(fplan_path) != "0"} {
     add_files -fileset [get_filesets constrs_1] "$cfg(fplan_path)"
@@ -158,7 +158,7 @@ for {set i 1}  {$i < $cfg(n_config)} {incr i} {
         set cmd "set_property SCOPED_TO_CELLS { inst_shell/inst_dynamic/inst_user_wrapper_$j } \[get_files \"$dcp_dir/config_$i/user_synthed_c$i\_$j.dcp\"]"
         eval $cmd
     }
-    add_files -fileset [get_filesets constrs_1] "$hw_dir/constraints/$cfg(fdev)/dynamic/impl"
+    add_dynamic_impl_constraints
 
     # Link design
     set cmd "link_design -mode default -reconfig_partitions { "

@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 
     boost::program_options::options_description runtime_options("Coyote many-vFPGA loopback options");
     runtime_options.add_options()
-        ("n_vfpga,n", boost::program_options::value<unsigned int>(&n_vfpga)->default_value(32), "Number of vFPGAs to test, from vFPGA 0 upwards")
+        ("n_vfpga,n", boost::program_options::value<unsigned int>(&n_vfpga)->default_value(15), "Number of vFPGAs to test, from vFPGA 0 upwards")
         ("message_size,s", boost::program_options::value<unsigned int>(&message_size)->default_value(64 * 1024), "Bytes sent through each vFPGA");
     boost::program_options::variables_map command_line_arguments;
     boost::program_options::store(boost::program_options::parse_command_line(argc, argv, runtime_options), command_line_arguments);

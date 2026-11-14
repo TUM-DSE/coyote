@@ -26,6 +26,7 @@ proc version {{args}} {{return 2025.1}}
 proc get_files {{args}} {{return $args}}
 proc get_filesets {{args}} {{return $args}}
 proc get_msg_config {{args}} {{return 0}}
+proc add_dynamic_impl_constraints {{}} {{puts "CALL add_dynamic_impl_constraints"}}
 foreach cmd {{create_project add_files set_property link_design write_checkpoint close_project open_checkpoint update_design lock_design pr_recombine write_device_image write_debug_probes exec}} {{
     proc $cmd {{args}} {{puts "CALL [lindex [info level 0] 0] $args"}}
 }}

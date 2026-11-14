@@ -27,7 +27,7 @@ if {[catch {
     add_files $shell_dcp
     set_property SCOPED_TO_CELLS {inst_shell} [get_files $shell_dcp]
     add_files -fileset [get_filesets constrs_1] "$hw_dir/constraints/$cfg(fdev)/shell/impl"
-    add_files -fileset [get_filesets constrs_1] "$hw_dir/constraints/$cfg(fdev)/dynamic/impl"
+    add_dynamic_impl_constraints
     add_files -fileset [get_filesets constrs_1] "$cfg(fplan_path)"
     set_property PROCESSING_ORDER LATE [get_files [file tail $cfg(fplan_path)]]
 

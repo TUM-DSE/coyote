@@ -1458,6 +1458,13 @@ macro(validation_checks_hw)
         if(EN_AURORA_1 AND NOT N_AURORA_AXI EQUAL 1)
             message(FATAL_ERROR "Aurora currently exposes exactly one stream per vFPGA")
         endif()
+        # The shipped static checkpoints take 15 vFPGA interrupts (N_USR_IRQ),
+        # so a shell with more vFPGAs only links against a rebuilt static.
+        if(N_REGIONS GREATER 15 AND BUILD_SHELL AND NOT BUILD_STATIC)
+            message(FATAL_ERROR "N_REGIONS=${N_REGIONS} exceeds the 15 vFPGA interrupts of the "
+                                "shipped static checkpoint; rebuild the static layer with "
+                                "BUILD_STATIC=1 and BUILD_SHELL=0.")
+        endif()
         if(EN_HOST_NOC AND (NOT FDEV_NAME STREQUAL "v80" OR NOT EN_STRM))
             message(FATAL_ERROR "EN_HOST_NOC requires V80 host streaming (FDEV_NAME=v80, EN_STRM=1)")
         endif()

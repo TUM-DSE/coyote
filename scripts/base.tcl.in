@@ -243,6 +243,30 @@ proc color {fore text} {
     }
 }
 
+# Add the dynamic-layer implementation constraints this configuration uses.
+# Each file pins the ports of one optional service (DDR, HBM, a network or
+# Aurora cage), and services share pins (the U280 DDR and HBM reference clocks
+# both use BJ43), so adding the whole directory lets an unused service take a
+# used service's pins.
+proc add_dynamic_impl_constraints {} {
+    upvar #0 cfg cnfg
+    upvar #0 hw_dir hw_dir
+    set selected {}
+    foreach xdc [lsort [glob -nocomplain "$hw_dir/constraints/$cnfg(fdev)/dynamic/impl/*.xdc"]] {
+        set name [file tail $xdc]
+        if {$cnfg(en_dcard) eq 0 && [string match "*ddr*" $name]} { continue }
+        if {$cnfg(en_hcard) eq 0 && [string match "*hbm*" $name]} { continue }
+        if {$cnfg(en_net_0) eq 0 && [string match "*net_0*" $name]} { continue }
+        if {$cnfg(en_net_1) eq 0 && [string match "*net_1*" $name]} { continue }
+        if {$cnfg(en_aurora_1) eq 0 && [string match "*aurora_1*" $name]} { continue }
+        lappend selected $xdc
+    }
+    if {[llength $selected] > 0} {
+        add_files -fileset [get_filesets constrs_1] $selected
+    }
+    return $selected
+}
+
 # Post-route physical optimization can replicate or move routed logic. Finalize
 # routing again before any checkpoint is validated, locked, or used for images.
 # Keep an already closed routed result unchanged: Vivado skips every optimization

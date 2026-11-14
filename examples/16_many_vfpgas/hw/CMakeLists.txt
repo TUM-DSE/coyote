@@ -34,12 +34,11 @@ find_package(CoyoteHW REQUIRED)
 project(example_16_many_vfpgas)
 message("*** Coyote Example 16: Many vFPGAs [Hardware] ***")
 
-# Number of vFPGAs. The default of 32 is the V80 maximum, which requires a build
-# without application reconfiguration (EN_PR=0); other boards allow up to 15.
-# A command-line -DN_REGIONS=<n> takes precedence (find_package sets the cache
-# default to 1, so a plain set() here would override -D).
+# Number of vFPGAs. The default of 15 is the most the shipped static layers
+# take. A command-line -DN_REGIONS=<n> takes precedence (find_package sets the
+# cache default to 1, so a plain set() here would override -D).
 if(NOT N_REGIONS OR N_REGIONS EQUAL 1)
-    set(N_REGIONS 32)
+    set(N_REGIONS 15)
 endif()
 
 # Enables host memory streams
