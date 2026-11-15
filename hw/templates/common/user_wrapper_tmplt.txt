@@ -1495,10 +1495,19 @@ module design_user_wrapper_{{ c_reg }} (
         .S_BSCAN_update(S_BSCAN_update)
     );
     {% elif cnfg.fpga_arch == 'versal' and cnfg.en_pr %}
+    // Register the debug reset inside the partition for the same reason as
+    // aresetn. It resets every debug core of the application.
+    logic dresetn_q = 1'b0;
+    (* max_fanout = 256 *) logic dresetn_user = 1'b0;
+    always_ff @(posedge dclk) begin
+        dresetn_q    <= dresetn;
+        dresetn_user <= dresetn_q;
+    end
+
     // Each region has an independently routed debug slave.
     debug_hub_user inst_debug_hub_user (
         .dclk(dclk),
-        .dresetn(dresetn),
+        .dresetn(dresetn_user),
         .axi_debug_hub_araddr(s_axi_debug_hub_araddr),
         .axi_debug_hub_arburst(s_axi_debug_hub_arburst),
         .axi_debug_hub_arcache(s_axi_debug_hub_arcache),
