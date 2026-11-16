@@ -145,18 +145,30 @@ proc create_hier_cell_path { parentCell nameHier } {
  create_bd_cell -type ip -vlnv xilinx.com:ip:rama:1.1 rama_0
  set_property -dict [list CONFIG.G_MEM_INTERLEAVE_TYPE {per_memory} CONFIG.G_MEM_COUNT {16} CONFIG.G_REORDER_QUEUE_DEPTH {512}] [get_bd_cells rama_0]
 
+  # Register every channel between RAMA and the HBM port. At 450 MHz the
+  # HBM output pins cannot reach RAMA's address arithmetic in one cycle.
+  set slice_hbm [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_register_slice:2.1 slice_hbm]
+  set_property -dict [ list \
+   CONFIG.REG_AR {1} \
+   CONFIG.REG_AW {1} \
+   CONFIG.REG_B {1} \
+   CONFIG.REG_R {1} \
+   CONFIG.REG_W {1} \
+ ] $slice_hbm
+
   # Create interface connections
   connect_bd_intf_net [get_bd_intf_pins S_AXI] [get_bd_intf_pins slice_0/S_AXI] 
   connect_bd_intf_net [get_bd_intf_pins slice_0/M_AXI] [get_bd_intf_pins axi_clock_converter_0/S_AXI]
   connect_bd_intf_net [get_bd_intf_pins axi_clock_converter_0/M_AXI] [get_bd_intf_pins rama_0/s_axi]
-  connect_bd_intf_net [get_bd_intf_pins rama_0/m_axi] [get_bd_intf_pins M_AXI]
+  connect_bd_intf_net [get_bd_intf_pins rama_0/m_axi] [get_bd_intf_pins slice_hbm/S_AXI]
+  connect_bd_intf_net [get_bd_intf_pins slice_hbm/M_AXI] [get_bd_intf_pins M_AXI]
   
 
   # Create port connections
   connect_bd_net [get_bd_pins aclk] [get_bd_pins axi_clock_converter_0/s_axi_aclk] [get_bd_pins slice_0/aclk] 
   connect_bd_net [get_bd_pins aresetn] [get_bd_pins axi_clock_converter_0/s_axi_aresetn] [get_bd_pins slice_0/aresetn] 
-  connect_bd_net [get_bd_pins hclk] [get_bd_pins axi_clock_converter_0/m_axi_aclk] [get_bd_pins rama_0/axi_aclk]
-  connect_bd_net [get_bd_pins hresetn] [get_bd_pins axi_clock_converter_0/m_axi_aresetn] [get_bd_pins rama_0/axi_aresetn]
+  connect_bd_net [get_bd_pins hclk] [get_bd_pins axi_clock_converter_0/m_axi_aclk] [get_bd_pins rama_0/axi_aclk] [get_bd_pins slice_hbm/aclk]
+  connect_bd_net [get_bd_pins hresetn] [get_bd_pins axi_clock_converter_0/m_axi_aresetn] [get_bd_pins rama_0/axi_aresetn] [get_bd_pins slice_hbm/aresetn]
 
   # Restore current instance
   current_bd_instance $oldCurInst
