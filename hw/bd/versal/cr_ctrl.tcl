@@ -324,9 +324,12 @@ proc cr_bd_design_ctrl { parentCell } {
     set_property -dict [list CONFIG.DIN_WIDTH $reset_outputs CONFIG.DIN_FROM [expr {$reset_outputs-1}] CONFIG.DIN_TO 1 CONFIG.DOUT_WIDTH $cnfg(n_reg)] [get_bd_cells app_reset_regions_slice]
   }
 
-  # Debug Hub IP
+  # Debug Hub IP. Its reset also resets every debug core attached to it, so it
+  # comes from a synchroniser in the shell, which placement can replicate,
+  # rather than from the static region's register.
   if {$cnfg(en_pr) eq 0} {
     set axi_dbg_hub_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dbg_hub:2.0 axi_dbg_hub_0 ]
+    create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 proc_sys_reset_d
   }
 
 ########################################################################################################
@@ -372,8 +375,9 @@ proc cr_bd_design_ctrl { parentCell } {
   connect_bd_net [get_bd_ports xresetn] [get_bd_pins axi_interconnect_0/aresetn]
   
   if {$cnfg(en_pr) eq 0} {
-    connect_bd_net [get_bd_ports xclk] [get_bd_pins axi_dbg_hub_0/aclk]
-    connect_bd_net [get_bd_ports xresetn] [get_bd_pins axi_dbg_hub_0/aresetn]
+    connect_bd_net [get_bd_ports xclk] [get_bd_pins axi_dbg_hub_0/aclk] [get_bd_pins proc_sys_reset_d/slowest_sync_clk]
+    connect_bd_net [get_bd_ports xresetn] [get_bd_pins proc_sys_reset_d/ext_reset_in]
+    connect_bd_net [get_bd_pins proc_sys_reset_d/peripheral_aresetn] [get_bd_pins axi_dbg_hub_0/aresetn]
   }
 
   connect_bd_net [get_bd_ports xclk] [get_bd_pins clk_wiz_0/clk_in1]
